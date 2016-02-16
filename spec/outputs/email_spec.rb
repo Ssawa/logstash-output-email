@@ -47,11 +47,11 @@ describe "outputs/email" do
           attachment.close()
           subject = plugin.new("to" => "me@host",
                                "port" => port,
-                               "attachments" => ["%{attachment_name}"])
+                               "attachments" => "%{attachment_name}")
           subject.register
-          subject.receive(LogStash::Event.new("attachment_name" => attachment.path))
+          subject.receive(LogStash::Event.new("attachment_name" => [attachment.path, attachment.path]))
           expect(message_observer.messages.size).to eq(1)
-          expect(message_observer.messages[0].attachments.size).to eq(1)
+          expect(message_observer.messages[0].attachments.size).to eq(2)
           expect(message_observer.messages[0].attachments[0].body).to eq("Hello, World")
         end
       end
