@@ -137,8 +137,16 @@ class LogStash::Outputs::Email < LogStash::Outputs::Base
       @attachments.each do |fileLocations|
         # We want to allow dynamically adding an array so we need
         # to deviate from the original implimentation
-        event.sprintf(fileLocations).split(',').each do |file_path| 
-          mail.add_file(file_path)
+        event.sprintf(fileLocations).split(',').each do |file_path|
+          begin
+            mail.add_file(file_path)
+          rescue Errno::ENOENT => e
+            @logger.warn("Error adding attachment",
+                         :message => e.message,
+                         :backtrace => e.backtrace,
+                         :event => event
+                        )
+          end
         end
       end # end @attachments.each
       @logger.debug? and @logger.debug("Sending mail with these values : ", :from => mail.from, :to => mail.to, :cc => mail.cc, :subject => mail.subject)
